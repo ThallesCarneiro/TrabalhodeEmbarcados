@@ -164,7 +164,7 @@ def get_hardware_info(ohw_ip, ohw_port, cpu_name, gpu_name, gpu_mem_size):
 
     gpu_core_clock = find_in_data(gpu_clocks, 'GPU Core')
     gpu_mem_clock = find_in_data(gpu_clocks, 'GPU Memory')
-    gpu_temp = "48.8 °C"#find_in_data(find_in_data(gpu_data, 'Temperatures'), 'GPU Core')
+    gpu_temp = find_in_data(find_in_data(gpu_data, 'Temperatures'), 'GPU Core')
     gpu_core_load = find_in_data(gpu_load, 'GPU Core')
     fan_percent ='100' #find_in_data(find_in_data(gpu_data, 'Controls'), 'GPU Fan')
 
@@ -208,11 +208,11 @@ def get_hardware_info(ohw_ip, ohw_port, cpu_name, gpu_name, gpu_mem_size):
         gpu_info['voltage'] = core_voltage['Value'][:-2]
 
     # Add rest of GPU info to GPU object
-    gpu_info['temp'] =48 #get_temperature_number(gpu_temp['Value'])
+    gpu_info['temp'] =get_temperature_number(gpu_temp['Value'])
     gpu_info['load'] = gpu_core_load['Value'][:-4]
     gpu_info['core_clock'] = gpu_core_clock['Value'][:-4]
     # Memory clock divided by 2 so it is the same as GPU-Z reports
-    gpu_info['mem_clock'] =1000 #int(int(gpu_mem_clock['Value'][:-4]) / 2)
+    gpu_info['mem_clock'] =int(int(gpu_mem_clock['Value'][:-4]) / 2)
     gpu_info['fan_percent'] =99 #fan_percent['Value'][:-4]
     gpu_info['fan_rpm'] = 1000#fan_rpm['Value'][:-4]
 
@@ -250,22 +250,21 @@ def main():
         # Prepare CPU string
         cpu_temps = my_info['cpu_temps']
         print(cpu_temps)
-        cpu = space_pad(int(my_info['cpu_load']), 3) + '% '
+        cpu = '' #space_pad(int(my_info['cpu_load']), 3) + '% '
         for index, temp in enumerate(cpu_temps):
             if index >= 4:
                 # Can't fit more than 4 temperatures in Arduino screen
                 break
-            cpu += space_pad(int(temp), 2) + 'C '
+            cpu += space_pad(int(temp), 2)
 
         # Prepare GPU strings
         gpu_info = my_info['gpu']
         gpu1 = \
-            space_pad(int(gpu_info['load']), 3) + '% ' + \
-            space_pad(int(gpu_info['temp']), 2) + 'C '
-        if 'used_mem' in gpu_info:
-            gpu1 += space_pad(int(gpu_info['used_mem']), 4) + 'MB'
-        else:
-            gpu1 += str(gpu_info['voltage']) + 'V'
+            space_pad(int(gpu_info['temp']), 2)
+        #if 'used_mem' in gpu_info:
+            #gpu1 += space_pad(int(gpu_info['used_mem']), 4) + 'MB'
+        #else:
+            #gpu1 += str(gpu_info['voltage']) + 'V'
 
         gpu2 = \
             space_pad(int(gpu_info['fan_percent']), 3) + '% F ' + \
@@ -276,8 +275,7 @@ def main():
             space_pad(1000, 4)
 
         # Send the strings via serial to the Arduino
-        arduino_str = \
-            cpu
+        arduino_str = cpu +' '+gpu1
         if serial_debug:
             print(arduino_str)
         else:
