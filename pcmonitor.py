@@ -145,7 +145,7 @@ def get_hardware_info(ohw_ip, ohw_port, cpu_name, gpu_name, gpu_mem_size):
     for core_temp in cpu_temps['Children']:
         # Check that "Core" is in the name, to prevent using Intel's
         # "CPU Package" temperature, and should work with AMD too.
-        if 'Core' in core_temp['Text']:
+        if 'CPU Package' in core_temp['Text']:
             # Remove '.0 °C' from end of value
             cpu_core_temps.append(get_temperature_number(core_temp['Value']))
 
@@ -164,9 +164,9 @@ def get_hardware_info(ohw_ip, ohw_port, cpu_name, gpu_name, gpu_mem_size):
 
     gpu_core_clock = find_in_data(gpu_clocks, 'GPU Core')
     gpu_mem_clock = find_in_data(gpu_clocks, 'GPU Memory')
-    gpu_temp = find_in_data(find_in_data(gpu_data, 'Temperatures'), 'GPU Core')
+    gpu_temp = "48.8 °C"#find_in_data(find_in_data(gpu_data, 'Temperatures'), 'GPU Core')
     gpu_core_load = find_in_data(gpu_load, 'GPU Core')
-    fan_percent = find_in_data(find_in_data(gpu_data, 'Controls'), 'GPU Fan')
+    fan_percent ='100' #find_in_data(find_in_data(gpu_data, 'Controls'), 'GPU Fan')
 
     # Check if the GPU has fan RPM info or just PWM info (percentage)
     if gpu_fan_rpm is None:
@@ -180,7 +180,7 @@ def get_hardware_info(ohw_ip, ohw_port, cpu_name, gpu_name, gpu_mem_size):
         gpu_fans = find_in_data(gpu_data, 'Controls')
 
     # Get GPU Fan RPM info (check both Fans > GPU and Fans > GPU Fan)
-    fan_rpm = find_in_data(gpu_fans, 'GPU')
+    fan_rpm = '1000'#find_in_data(gpu_fans, 'GPU')
     if fan_rpm == -1:
         fan_rpm = find_in_data(gpu_fans, 'GPU Fan')
 
@@ -208,13 +208,13 @@ def get_hardware_info(ohw_ip, ohw_port, cpu_name, gpu_name, gpu_mem_size):
         gpu_info['voltage'] = core_voltage['Value'][:-2]
 
     # Add rest of GPU info to GPU object
-    gpu_info['temp'] = get_temperature_number(gpu_temp['Value'])
+    gpu_info['temp'] =48 #get_temperature_number(gpu_temp['Value'])
     gpu_info['load'] = gpu_core_load['Value'][:-4]
     gpu_info['core_clock'] = gpu_core_clock['Value'][:-4]
     # Memory clock divided by 2 so it is the same as GPU-Z reports
-    gpu_info['mem_clock'] = int(int(gpu_mem_clock['Value'][:-4]) / 2)
-    gpu_info['fan_percent'] = fan_percent['Value'][:-4]
-    gpu_info['fan_rpm'] = fan_rpm['Value'][:-4]
+    gpu_info['mem_clock'] =1000 #int(int(gpu_mem_clock['Value'][:-4]) / 2)
+    gpu_info['fan_percent'] =99 #fan_percent['Value'][:-4]
+    gpu_info['fan_rpm'] = 1000#fan_rpm['Value'][:-4]
 
     # Add GPU info to my_info
     my_info['gpu'] = gpu_info
@@ -235,7 +235,7 @@ def main():
     if serial_port == 'TEST':
         serial_debug = True
     else:
-        ser = serial.Serial(serial_port)
+        ser = serial.Serial(serial_port,baudrate = 9600, writeTimeout = 0)
 
     while True:
         # Get current info
@@ -249,6 +249,7 @@ def main():
 
         # Prepare CPU string
         cpu_temps = my_info['cpu_temps']
+        print(cpu_temps)
         cpu = space_pad(int(my_info['cpu_load']), 3) + '% '
         for index, temp in enumerate(cpu_temps):
             if index >= 4:
@@ -271,8 +272,8 @@ def main():
             space_pad(int(gpu_info['fan_rpm']), 4) + ' RPM'
 
         gpu3 = \
-            space_pad(int(gpu_info['core_clock']), 4) + '/' + \
-            space_pad(int(gpu_info['mem_clock']), 4)
+            space_pad(1000, 4) + '/' + \
+            space_pad(1000, 4)
 
         # Send the strings via serial to the Arduino
         arduino_str = \
@@ -280,6 +281,7 @@ def main():
         if serial_debug:
             print(arduino_str)
         else:
+            print(arduino_str)
             ser.write(arduino_str.encode())
 
         # Wait until refreshing Arduino again
