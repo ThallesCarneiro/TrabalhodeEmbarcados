@@ -12,23 +12,26 @@
 
 SoftwareSerial hc05(10, 11); // RX | TX
 
-#define PIN 6
+#define MATRIX_PIN 6
 
-#define PIXEL_PIN    3
+#define LED_PIN    3
 
-#define PIXEL_COUNT 30  // Number of NeoPixels
+#define LED_COUNT 30  // Number of NeoPixels
 
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, PIN,
+Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, MATRIX_PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
   NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
   NEO_GRB            + NEO_KHZ800);
+
+Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
 
 const uint16_t colors[] = {
   matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
 
 long previousMillis = 0;        // will store last time LED was updated
 
-char inputString[5];
+String inputString = "";
+String tempString = "";
 
 boolean stringComplete = false; 
 
@@ -39,21 +42,26 @@ const byte interruptPin1 = 7;
 const byte interruptPin2 = 8;
 
 volatile int color_mode = 0;
+int stripLED = 0;
 
 //unsigned long currentMillis = millis();
 
 void serialEvent() {
-  int i = 0;
   while (hc05.available()) {
     char inChar = (char)hc05.read();
     if (inChar == '|') {
       stringComplete = true;
     }
     else {
-      inputString[i] = inChar;
-      i++;
+      tempString += inChar;
     }
   }
+  
+  if (stringComplete){
+    inputString = tempString;
+  }
+  tempString = "";
+  stringComplete = false;
 }
 
 void callback()
@@ -74,6 +82,17 @@ void button2()
   delayMicroseconds(1000);
 }
 
+void colorWipe(uint32_t color, int wait) {
+  if(wait<(millis()-previousMillis); stripLED++) { // For each pixel in strip...
+    strip.setPixelColor(stripLED, color);         //  Set pixel's color (in RAM)
+    strip.show();                          //  Update strip to match
+    previousMillis = millis();
+  }
+  if(stripLED > 30){
+    stripLED = 0;
+  }
+}
+
 void setup()
 {
   Timer1.initialize(2000000);         // initialize timer1, and set a 2 seconds period
@@ -83,13 +102,15 @@ void setup()
   attachInterrupt(digitalPinToInterrupt(interruptPin1), button1, RISING);
   attachInterrupt(digitalPinToInterrupt(interruptPin2), button2, RISING);
   Serial.begin(9600);
-  hc05.begin(9600);  //Default Baud for comm, it may be different for your Module. 
-  Serial.println("The bluetooth gates are open.\n Connect to HC-05 from any other bluetooth device with 1234 as pairing key!.");
+  hc05.begin(9600); 
   matrix.begin();
   matrix.setTextWrap(false);
   matrix.setBrightness(40);
   matrix.setTextColor(colors[0]);
   
+  strip.begin();           
+  strip.show();            
+  strip.setBrightness(40);
 }
 
 void loop()
@@ -104,5 +125,10 @@ void loop()
     matrix.setTextColor(colors[pass]);
   }
   matrix.show();
+
+  colorWipe(strip.Color(255,   0,   0), 50);    // Red
+  strip.setBrightness(map(analogRead(A0),0,1023,0,255));
+  
+  
   delay(200);  
 }
