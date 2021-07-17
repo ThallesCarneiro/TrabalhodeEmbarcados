@@ -212,7 +212,7 @@ def get_hardware_info(ohw_ip, ohw_port, cpu_name, gpu_name, gpu_mem_size):
     gpu_info['load'] = gpu_core_load['Value'][:-4]
     gpu_info['core_clock'] = gpu_core_clock['Value'][:-4]
     # Memory clock divided by 2 so it is the same as GPU-Z reports
-    gpu_info['mem_clock'] =int(int(gpu_mem_clock['Value'][:-4]) / 2)
+    gpu_info['mem_clock'] =0#int(int(gpu_mem_clock['Value'][:-4]) / 2)
     gpu_info['fan_percent'] =99 #fan_percent['Value'][:-4]
     gpu_info['fan_rpm'] = 1000#fan_rpm['Value'][:-4]
 
@@ -262,7 +262,7 @@ def main():
         gpu1 = \
             space_pad(int(gpu_info['temp']), 2)
         #if 'used_mem' in gpu_info:
-            #gpu1 += space_pad(int(gpu_info['used_mem']), 4) + 'MB'
+            #gpu1 += space_pad(int(gpu_info['used_mem']), 4) + 'MB' 
         #else:
             #gpu1 += str(gpu_info['voltage']) + 'V'
 
@@ -275,7 +275,7 @@ def main():
             space_pad(1000, 4)
 
         # Send the strings via serial to the Arduino
-        arduino_str = cpu +' '+gpu1
+        arduino_str = cpu +' '+gpu1 + '|'
         if serial_debug:
             print(arduino_str)
         else:
