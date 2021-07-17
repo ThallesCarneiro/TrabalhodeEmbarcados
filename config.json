@@ -1,8 +1,8 @@
 {
     "ohw_ip": "localhost",
     "ohw_port": "8085",
-    "serial_port": "COM17",
-    "cpu_name": "AMD Ryzen 5 3400G",
-    "gpu_name": "AMD Radeon RX Vega 11 Graphics",
-    "gpu_mem_size": 3000
+    "serial_port": "COM8",
+    "cpu_name": "Intel Core i7-10750H",
+    "gpu_name": "NVIDIA NVIDIA GeForce RTX 2060",
+    "gpu_mem_size": 6144
   }

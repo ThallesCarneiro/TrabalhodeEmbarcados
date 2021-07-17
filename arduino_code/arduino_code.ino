@@ -30,3 +30,12 @@ void setup()
   hc05.begin(9600);  //Default Baud for comm, it may be different for your Module. 
   Serial.println("The bluetooth gates are open.\n Connect to HC-05 from any other bluetooth device with 1234 as pairing key!.");
 }
+
+void loop()
+{
+  if (hc05.available()){
+    Serial.println("temperatura");
+    Serial.println(hc05.read());
+  }
+  delay(20);  
+}
