@@ -259,20 +259,7 @@ def main():
 
         # Prepare GPU strings
         gpu_info = my_info['gpu']
-        gpu1 = \
-            space_pad(int(gpu_info['temp']), 2)
-        #if 'used_mem' in gpu_info:
-            #gpu1 += space_pad(int(gpu_info['used_mem']), 4) + 'MB' 
-        #else:
-            #gpu1 += str(gpu_info['voltage']) + 'V'
-
-        gpu2 = \
-            space_pad(int(gpu_info['fan_percent']), 3) + '% F ' + \
-            space_pad(int(gpu_info['fan_rpm']), 4) + ' RPM'
-
-        gpu3 = \
-            space_pad(1000, 4) + '/' + \
-            space_pad(1000, 4)
+        gpu1 = space_pad(int(gpu_info['temp']), 2)
 
         # Send the strings via serial to the Arduino
         arduino_str = 'C'+cpu +' '+'G'+gpu1 + '|'
