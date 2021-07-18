@@ -56,7 +56,8 @@ int pass = 0;
 const byte button1 = 2;
 const byte interruptPin = 3;
 
-volatile unsigned int color_mode;
+volatile unsigned int button_count;
+unsigned int color_mode;
 volatile bool temperature_mode = true;
 int stripLED = 0;
 
@@ -88,15 +89,7 @@ void callback()
 
 void button2()
 {
-  if(color_mode == 0) {
-    color_mode = 1;
-  }
-  else if(color_mode == 1) {
-    color_mode = 2;
-  }
-  else {
-    color_mode = 0;
-  }
+  button_count++;
 }
 
 void display_lines() {
@@ -117,8 +110,7 @@ void display_temperature() {
   matrix.print(inputString);
   if(--x < -36) {
     x = matrix.width();
-    if(++pass >= 3) pass = 0;
-    matrix.setTextColor(colors[pass]);
+    matrix.setTextColor(colors[color_mode]);
   }
   matrix.show();
 }
@@ -156,11 +148,12 @@ void setup()
   matrix.setTextWrap(false);
   matrix.setBrightness(40);
   matrix.setTextColor(colors[0]);
-  FastLED.addLeds<WS2812B, DATA_PIN, BRG>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
 }
 
 void loop()
 {
+  color_mode = button_count % 3;
   if(digitalRead(button1)){
     temperature_mode = true;
   }
@@ -168,7 +161,7 @@ void loop()
     temperature_mode = false;
   }
   matrix.setBrightness(map(analogRead(A0),0,1023,0,100));
-  display_lines();
+  display_temperature();
   FastLED.setBrightness(map(analogRead(A0),0,1023,0,100));  
   display_stripLED();
   Serial.println(color_mode);
