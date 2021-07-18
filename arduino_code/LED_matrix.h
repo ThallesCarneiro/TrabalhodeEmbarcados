@@ -23,7 +23,7 @@ int row2 = 4;
 
 int x = matrix.width();
 
-void display_temperature(int color_mode, String inputString);
+void display_temperature(int color_mode, String temperatures);
 
 void display_lines(int color_mode);
 
@@ -43,14 +43,15 @@ void display_lines(int color_mode) {
     row1 = 0;
     colum1 = millis() % 8;
   }
-  matrix.drawLine(colum1, 0, colum1, row1, colors[color_mode]);
-  matrix.drawLine(colum2, 0, colum2, row2, colors[color_mode]);
+  matrix.drawLine(colum1, row1-3, colum1, row1, colors[color_mode]);
+  matrix.drawLine(colum2, row2-3, colum2, row2, colors[color_mode]);
   matrix.show();
 }
 
-void display_temperature(int color_mode, String inputString) {  matrix.fillScreen(0);
+void display_temperature(int color_mode, String temperatures) {  
+  matrix.fillScreen(0);
   matrix.setCursor(x, 0);
-  matrix.print(inputString);
+  matrix.print(temperatures);
   if(--x < -36) {
     x = matrix.width();
     matrix.setTextColor(colors[color_mode]);

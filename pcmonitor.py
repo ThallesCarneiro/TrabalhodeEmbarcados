@@ -7,10 +7,12 @@ from urllib.request import Request, urlopen
 import serial
 import serial.tools.list_ports
 
+from datetime import date
+
 serial_debug = False
 show_gpu_mem = None
 gpu_fan_rpm = None
-
+create_log = False
 
 def space_pad(number, length):
     """
@@ -230,6 +232,10 @@ def main():
     __location__ = os.path.realpath(cd)
     config = get_local_json_contents(os.path.join(__location__, 'config.json'))
 
+    #Create File Logs
+    if create_log:
+        log_file = open(str(date.today())+'.txt',"w+")
+
     # Connect to the specified serial port
     serial_port = config['serial_port']
     if serial_port == 'TEST':
@@ -259,23 +265,12 @@ def main():
 
         # Prepare GPU strings
         gpu_info = my_info['gpu']
-        gpu1 = \
-            space_pad(int(gpu_info['temp']), 2)
-        #if 'used_mem' in gpu_info:
-            #gpu1 += space_pad(int(gpu_info['used_mem']), 4) + 'MB' 
-        #else:
-            #gpu1 += str(gpu_info['voltage']) + 'V'
-
-        gpu2 = \
-            space_pad(int(gpu_info['fan_percent']), 3) + '% F ' + \
-            space_pad(int(gpu_info['fan_rpm']), 4) + ' RPM'
-
-        gpu3 = \
-            space_pad(1000, 4) + '/' + \
-            space_pad(1000, 4)
+        gpu1 = space_pad(int(gpu_info['temp']), 2)
 
         # Send the strings via serial to the Arduino
         arduino_str = 'C'+cpu +' '+'G'+gpu1 + '|'
+        if create_log:
+            log_file.write(str(time.localtime())+ arduino_str +'\n')
         if serial_debug:
             print(arduino_str)
         else:

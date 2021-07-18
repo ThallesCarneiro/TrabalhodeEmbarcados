@@ -9,20 +9,21 @@ int stripLED = 0;
 
 void display_stripLED(int color_mode);
 
-
+// Função de acionamento sequencial da fita de LEDs com a cor selecionada
 void display_stripLED(int color_mode) {
-  if(stripLED++ < 30) { 
-    switch(color_mode){
-      case 0:
-        leds[stripLED] = CRGB::Red;
-        break;
-      case 1:
-        leds[stripLED] = CRGB::Green;
-        break;
-      case 2:
-        leds[stripLED] = CRGB::Blue;
-        break;
-    }
+  switch(color_mode){
+    case 0:
+      leds[stripLED] = CRGB::Red;
+      break;
+    case 1:
+      leds[stripLED] = CRGB::Green;
+      break;
+    case 2:
+      leds[stripLED] = CRGB::Blue;
+      break;
+  }
+  if(stripLED < 30) {
+    stripLED++;
   }
   else {
     stripLED = 0;
