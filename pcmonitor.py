@@ -12,7 +12,11 @@ from datetime import date
 serial_debug = False
 show_gpu_mem = None
 gpu_fan_rpm = None
+<<<<<<< HEAD
 create_log = False
+=======
+create_log = True
+>>>>>>> 71612aa0b51f6bd1c6cdbda9953f8cd6c758c3ca
 
 def space_pad(number, length):
     """
@@ -234,7 +238,11 @@ def main():
 
     #Create File Logs
     if create_log:
+<<<<<<< HEAD
         log_file = open(str(date.today())+'.txt',"w+")
+=======
+        log_file = open(str(ate.today())+'.txt')
+>>>>>>> 71612aa0b51f6bd1c6cdbda9953f8cd6c758c3ca
 
     # Connect to the specified serial port
     serial_port = config['serial_port']
@@ -270,7 +278,11 @@ def main():
         # Send the strings via serial to the Arduino
         arduino_str = 'C'+cpu +' '+'G'+gpu1 + '|'
         if create_log:
+<<<<<<< HEAD
             log_file.write(str(time.localtime())+ arduino_str +'\n')
+=======
+            log_file.write(time.localtime()+ arduino_str +'\n')
+>>>>>>> 71612aa0b51f6bd1c6cdbda9953f8cd6c758c3ca
         if serial_debug:
             print(arduino_str)
         else:
