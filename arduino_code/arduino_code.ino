@@ -160,8 +160,16 @@ void loop()
   else {
     temperature_mode = false;
   }
+
+  switch(temperature_mode){
+    case true:
+      display_temperature();
+      break;
+    case false:
+      display_lines();
+      break;
+  }  
   matrix.setBrightness(map(analogRead(A0),0,1023,0,100));
-  display_temperature();
   FastLED.setBrightness(map(analogRead(A0),0,1023,0,100));  
   display_stripLED();
   Serial.println(color_mode);
