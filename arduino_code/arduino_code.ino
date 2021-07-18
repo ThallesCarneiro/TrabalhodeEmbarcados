@@ -1,11 +1,12 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
+#include<FastLED.h>
 #ifndef PSTR
- #define PSTR // Make Arduino Due happy
+ #define PSTR 
 #endif
 #ifdef __AVR__
- #include <avr/power.h> // Required for 16 MHz Adafruit Trinket
+ #include <avr/power.h> 
 #endif
 #include <SoftwareSerial.h>
 #include <TimerOne.h>
@@ -14,16 +15,30 @@ SoftwareSerial hc05(10, 11); // RX | TX
 
 #define MATRIX_PIN 6
 
-#define LED_PIN    3
+#define DATA_PIN 5
 
-#define LED_COUNT 30  // Number of NeoPixels
+#define NUM_LEDS 30
 
-Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(8, 8, MATRIX_PIN,
+#define mw 8
+
+#define mh 8
+CRGB leds[NUM_LEDS];
+
+byte  r, g, b;
+
+Adafruit_NeoMatrix matrix = Adafruit_NeoMatrix(mw, mh, MATRIX_PIN,
   NEO_MATRIX_TOP     + NEO_MATRIX_RIGHT +
   NEO_MATRIX_COLUMNS + NEO_MATRIX_PROGRESSIVE,
   NEO_GRB            + NEO_KHZ800);
 
-Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRBW + NEO_KHZ800);
+#define LED_BLACK         0
+
+#define LED_RED_HIGH      (31 << 11)
+
+#define LED_GREEN_HIGH    (63 << 5)  
+
+#define LED_BLUE_HIGH     31
+
 
 const uint16_t colors[] = {
   matrix.Color(255, 0, 0), matrix.Color(0, 255, 0), matrix.Color(0, 0, 255) };
@@ -38,10 +53,11 @@ boolean stringComplete = false;
 int x = matrix.width();
 int pass = 0;
 
-const byte interruptPin1 = 7;
-const byte interruptPin2 = 8;
+const byte button1 = 2;
+const byte interruptPin = 3;
 
-volatile int color_mode = 0;
+volatile unsigned int color_mode;
+volatile bool temperature_mode = true;
 int stripLED = 0;
 
 //unsigned long currentMillis = millis();
@@ -70,52 +86,32 @@ void callback()
   Serial.println(inputString);
 }
 
-void button1()
-{
-  
-  delayMicroseconds(1000);
-}
-
 void button2()
 {
-  
-  delayMicroseconds(1000);
-}
-
-void colorWipe(uint32_t color, int wait) {
-  if(wait<(millis()-previousMillis); stripLED++) { // For each pixel in strip...
-    strip.setPixelColor(stripLED, color);         //  Set pixel's color (in RAM)
-    strip.show();                          //  Update strip to match
-    previousMillis = millis();
+  if(color_mode == 0) {
+    color_mode = 1;
   }
-  if(stripLED > 30){
-    stripLED = 0;
+  else if(color_mode == 1) {
+    color_mode = 2;
+  }
+  else {
+    color_mode = 0;
   }
 }
 
-void setup()
-{
-  Timer1.initialize(2000000);         // initialize timer1, and set a 2 seconds period
-  Timer1.attachInterrupt(callback);  // attaches callback() as a timer overflow interrupt
-  pinMode(interruptPin1, INPUT_PULLUP);
-  pinMode(interruptPin2, INPUT_PULLUP);
-  attachInterrupt(digitalPinToInterrupt(interruptPin1), button1, RISING);
-  attachInterrupt(digitalPinToInterrupt(interruptPin2), button2, RISING);
-  Serial.begin(9600);
-  hc05.begin(9600); 
-  matrix.begin();
-  matrix.setTextWrap(false);
-  matrix.setBrightness(40);
-  matrix.setTextColor(colors[0]);
-  
-  strip.begin();           
-  strip.show();            
-  strip.setBrightness(40);
+void display_lines() {
+    matrix.clear();
+
+    matrix.drawLine(0,mh/2+1, mw-1,mh/2+1, LED_RED_HIGH);
+
+    matrix.drawLine(mw/2+1, 0, mw/2+1, mh-1, LED_GREEN_HIGH);
+
+    // Diagonal blue line.
+    matrix.drawLine(0,0, mw-1,mh-1, LED_BLUE_HIGH);
+    matrix.show();
 }
 
-void loop()
-{
-  matrix.setBrightness(map(analogRead(A0),0,1023,0,255));
+void display_temperature() {
   matrix.fillScreen(0);
   matrix.setCursor(x, 0);
   matrix.print(inputString);
@@ -125,10 +121,56 @@ void loop()
     matrix.setTextColor(colors[pass]);
   }
   matrix.show();
+}
 
-  colorWipe(strip.Color(255,   0,   0), 50);    // Red
-  strip.setBrightness(map(analogRead(A0),0,1023,0,255));
-  
-  
+void display_stripLED() {
+  if(stripLED++ < 30) { 
+    switch(color_mode){
+      case 0:
+        leds[stripLED] = CRGB::Red;
+        break;
+      case 1:
+        leds[stripLED] = CRGB::Green;
+        break;
+      case 2:
+        leds[stripLED] = CRGB::Blue;
+        break;
+    }
+  }
+  else {
+    stripLED = 0;
+  }
+  FastLED.show();
+}
+
+void setup()
+{
+  Timer1.initialize(2000000);         // initialize timer1, and set a 2 seconds period
+  Timer1.attachInterrupt(callback);  // attaches callback() as a timer overflow interrupt
+  pinMode(button1, INPUT_PULLUP);
+  pinMode(interruptPin, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(interruptPin), button2, CHANGE);
+  Serial.begin(9600);
+  hc05.begin(9600); 
+  matrix.begin();
+  matrix.setTextWrap(false);
+  matrix.setBrightness(40);
+  matrix.setTextColor(colors[0]);
+  FastLED.addLeds<WS2812B, DATA_PIN, BRG>(leds, NUM_LEDS);
+}
+
+void loop()
+{
+  if(digitalRead(button1)){
+    temperature_mode = true;
+  }
+  else {
+    temperature_mode = false;
+  }
+  matrix.setBrightness(map(analogRead(A0),0,1023,0,100));
+  display_lines();
+  FastLED.setBrightness(map(analogRead(A0),0,1023,0,100));  
+  display_stripLED();
+  Serial.println(color_mode);
   delay(200);  
 }
