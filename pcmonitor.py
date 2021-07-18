@@ -275,7 +275,7 @@ def main():
             space_pad(1000, 4)
 
         # Send the strings via serial to the Arduino
-        arduino_str = cpu +' '+gpu1 + '|'
+        arduino_str = 'C'+cpu +' '+'G'+gpu1 + '|'
         if serial_debug:
             print(arduino_str)
         else:
