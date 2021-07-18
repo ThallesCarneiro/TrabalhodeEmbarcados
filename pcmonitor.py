@@ -12,7 +12,7 @@ from datetime import date
 serial_debug = False
 show_gpu_mem = None
 gpu_fan_rpm = None
-create_log = None
+create_log = True
 
 def space_pad(number, length):
     """
@@ -234,7 +234,7 @@ def main():
 
     #Create File Logs
     if create_log:
-        log_file = open(date.today())
+        log_file = open(str(ate.today())+'.txt')
 
     # Connect to the specified serial port
     serial_port = config['serial_port']
