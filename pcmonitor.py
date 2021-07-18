@@ -7,10 +7,12 @@ from urllib.request import Request, urlopen
 import serial
 import serial.tools.list_ports
 
+from datetime import date
+
 serial_debug = False
 show_gpu_mem = None
 gpu_fan_rpm = None
-
+create_log = None
 
 def space_pad(number, length):
     """
@@ -230,6 +232,10 @@ def main():
     __location__ = os.path.realpath(cd)
     config = get_local_json_contents(os.path.join(__location__, 'config.json'))
 
+    #Create File Logs
+    if create_log:
+        log_file = open(date.today())
+
     # Connect to the specified serial port
     serial_port = config['serial_port']
     if serial_port == 'TEST':
@@ -263,6 +269,8 @@ def main():
 
         # Send the strings via serial to the Arduino
         arduino_str = 'C'+cpu +' '+'G'+gpu1 + '|'
+        if create_log:
+            log_file.write(time.localtime()+ arduino_str +'\n')
         if serial_debug:
             print(arduino_str)
         else:
