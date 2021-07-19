@@ -4,7 +4,7 @@
 #include <Adafruit_NeoMatrix.h>
 #include <Adafruit_NeoPixel.h>
 #ifndef PSTR
- #define PSTR 
+#define PSTR 
 #endif
 #include "definicoes_sistema.h"
 
